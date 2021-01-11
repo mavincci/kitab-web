@@ -1,11 +1,26 @@
 package api
 
-import "net/http"
-import "github.com/mavincci/Kitab-web/templates"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func init() {
-}
+func Index(ctx *gin.Context) {
+	firstName, _ := ctx.GetPostForm("firstName")
+	middleName, _ := ctx.GetPostForm("middleName")
+	lastName, _ := ctx.GetPostForm("lastName")
+	age, _ := ctx.GetPostForm("age")
+	nationality, _ := ctx.GetPostForm("nationality")
+	eyeColor, _ := ctx.GetPostForm("eyeColor")
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	templates.Index.Execute(w, nil)
+	ctx.JSON(
+		200,
+		gin.H{
+			"firstName":   firstName,
+			"middleName":  middleName,
+			"lastName":    lastName,
+			"age":         age,
+			"nationality": nationality,
+			"eyeColor":    eyeColor,
+			"message":     "Success full try",
+		})
 }

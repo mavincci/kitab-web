@@ -1,11 +1,23 @@
 package main
 
-import "net/http"
-import "github.com/mavincci/Kitab-web/api"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mavincci/Kitab-web/api"
+)
 
 func main() {
-	fs := http.FileServer(http.Dir("./assets"))
-	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
-	http.HandleFunc("/", api.Index)
-	_ = http.ListenAndServe(":90", nil)
+	server := gin.Default()
+	//server.Static("/assets/", "./assets/")
+
+	//server.Use(middleware.ApiResolution)
+
+	for route, handler := range api.Routes {
+		server.POST(route, handler)
+	}
+
+	//for route, handler := range view.Routes {
+	//	server.GET(route, handler)
+	//}
+
+	_ = server.Run(":80")
 }
