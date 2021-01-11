@@ -23,14 +23,15 @@ func init() {
 		dsn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
 			host, port, user, dbname, passwd)
 	*/
-	host := "localhost"
-	port := 5432
-	user := "postgres"
-	dbname := "kitab_test"
-	passwd := "nil@mavpgmaster"
+	host := os.Getenv("db_host")   // "localhost"
+	port := os.Getenv("db_port")   // 5432
+	user := os.Getenv("db_user")   //"postgres"
+	dbname := os.Getenv("db_name") // "kitab_test"
+	pass := os.Getenv("db_pass")   // "nil@mavpgmaster"
+	ssl := os.Getenv("db_ssl")     // "sslmode=disable"
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable",
-		host, port, user, dbname, passwd)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s %s",
+		host, port, user, dbname, pass, ssl)
 
 	DB, dbErr = gorm.Open("postgres", dsn)
 	if dbErr != nil {
