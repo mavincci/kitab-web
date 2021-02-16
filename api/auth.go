@@ -3,18 +3,42 @@ package api
 import (
 	"crypto/md5"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mavincci/Kitab-web/api/model"
 	"github.com/mavincci/Kitab-web/db"
-	"net/http"
-	"time"
 )
 
-func UserLogin(ctx *gin.Context) {
-	user := &model.User{}
+func UserForgot(ctx *gin.Context) {
+	var user model.User
 
 	if uname, ok := ctx.GetPostForm("uname"); ok {
-		user.UserName = uname
+		user.UserName = strings.ToLower(uname)
+	} else if pno, ok := ctx.GetPostForm("pno"); ok {
+		user.Pno = pno
+	} else if email, ok := ctx.GetPostForm("email"); ok {
+		user.Email = email
+	} else {
+		jsonNotFound(ctx, "id")
+		return
+	}
+}
+
+func UserLogin(ctx *gin.Context) {
+	var user model.User
+
+	//role, ok := ctx.GetPostForm("role")
+	//if !ok {
+	//	jsonNotFound(ctx, "role")
+	//	return
+	//}
+
+	//id, ok := ctx.GetPostForm("uname")
+	if uname, ok := ctx.GetPostForm("uname"); ok {
+		user.UserName = strings.ToLower(uname)
 	} else if pno, ok := ctx.GetPostForm("pno"); ok {
 		user.Pno = pno
 	} else if email, ok := ctx.GetPostForm("email"); ok {
@@ -39,8 +63,17 @@ func UserLogin(ctx *gin.Context) {
 		return
 	}
 
+	//if role != temp.Role {
+	//	ctx.AbortWithStatusJSON(
+	//		http.StatusBadRequest,
+	//		gin.H {
+	//			"message": "Role doesn't MATCH!!!",
+	//		})
+	//	return
+	//}
+
 	auth := model.Auth{
-		Token:  fmt.Sprintf("%x", md5.Sum([]byte(temp.PasswordDigest + temp.Email + time.Now().String()))),
+		Token:  fmt.Sprintf("%x", md5.Sum([]byte(temp.PasswordDigest+time.Now().String()))),
 		UserID: temp.ID,
 		User:   temp,
 	}
@@ -49,16 +82,29 @@ func UserLogin(ctx *gin.Context) {
 
 	ctx.JSON(
 		http.StatusOK,
-		gin.H {
+		gin.H{
 			"token": auth.Token,
 			//"id": auth.UserID,
-			"role": temp.Role,
+			"role":  temp.Role,
+			"uname": temp.UserName,
+			"email": temp.Email,
 		})
 }
 
-func Logout(ctx *gin.Context) {
+func UserLogout(ctx *gin.Context) {
+	token, ok := ctx.GetPostForm("token")
+	if ok {
+		auth := &model.Auth{}
+		db.DB.Where(&model.Auth{Token: token}).First(&auth)
+		if auth.UserID <= 0 {
+			jsonUnAuthorized(ctx)
+			return
+		}
+		db.DB.Delete(&auth)
+		return
+	}
+	jsonNotFound(ctx, "Access Token")
 }
-
 
 func userAuthorize(ctx *gin.Context) (id uint, ok bool) {
 	token, ok := ctx.GetPostForm("token")

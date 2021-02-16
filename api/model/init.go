@@ -6,4 +6,5 @@ func init() {
 	db.DB.AutoMigrate(&User{})
 	db.DB.AutoMigrate(&Auth{})
 	db.DB.AutoMigrate(&Book{})
+	db.DB.AutoMigrate(&Trade{})
 }

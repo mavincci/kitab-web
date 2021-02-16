@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	//_ "github.com/jinzhu/gorm/dialects/mysql"
 	"os"
 )
 
@@ -24,7 +25,12 @@ func buildDb() {
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s %s",
 		host, port, user, dbname, pass, ssl)
+	//dsn := fmt.Sprintf( "%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	//	user, pass, host, /*port,*/ dbname)
+	//
+	//DB, dbErr = gorm.Open("mysql", dsn)
 
+	//DB, dbErr = gorm.Open("mysql", dsn)
 	DB, dbErr = gorm.Open("postgres", dsn)
 	if dbErr != nil {
 		fmt.Println("Can not connect to db")

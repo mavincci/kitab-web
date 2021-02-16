@@ -3,12 +3,13 @@ package api
 import (
 	"crypto/md5"
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mavincci/Kitab-web/api/model"
 	"github.com/mavincci/Kitab-web/db"
-	"strings"
-	"time"
 )
+
 
 func UserRegister(ctx *gin.Context) {
 	uname, ok := ctx.GetPostForm("uname")
@@ -36,6 +37,7 @@ func UserRegister(ctx *gin.Context) {
 		jsonNotFound(ctx, "role")
 		return
 	}
+
 	if role == "admin" {
 		jsonHeld(ctx, "unauthorized role\"Admin\"")
 		return
@@ -43,7 +45,7 @@ func UserRegister(ctx *gin.Context) {
 
 	usr := model.User{
 		UserName:       strings.ToLower(uname),
-		PasswordDigest: fmt.Sprintf("%x", md5.Sum([]byte(time.Now().String() + passwd))),
+		PasswordDigest: fmt.Sprintf("%x", md5.Sum([]byte(passwd))),
 		Email:          email,
 		Pno:            pno,
 		Role:			role,
@@ -74,6 +76,29 @@ func UserRegister(ctx *gin.Context) {
 
 	db.DB.Create(&usr)
 
-	ctx.JSON(200, usr)
+	//ctx.JSON(200, usr)
 }
 
+
+func UserDelete(ctx *gin.Context) {
+	id, ok := userAuthorize(ctx)
+	if !ok {
+		return
+	}
+
+	curr := &model.User{}
+	db.DB.Where("id = ?", id).First(&curr)
+
+	if curr.ID == 0 {
+		//fmt.Println("H****************")
+		jsonNotFound(ctx, "user")
+		return
+	}
+	var auths []model.Auth
+	db.DB.Where("user_id = ?", curr.ID).Find(&auths)
+	db.DB.Unscoped().Delete(auths)
+	//db.DB.Delete(auths)
+
+
+	db.DB.Delete(curr)
+}
